@@ -62,4 +62,21 @@ object Configz {
 
     override def toString = "Configz(atPath)[%s]".format(f)
   }
+
+  import collection.JavaConversions._
+
+  implicit val BooleanAtPath:     Configz[String => Boolean]       = atPath(config => path => config.getBoolean(path))
+  implicit val BooleanListAtPath: Configz[String => List[Boolean]] = atPath(config => path => config.getBooleanList(path).toList.map(Boolean.unbox))
+  implicit val ConfigAtPath:      Configz[String => Config]        = atPath(config => path => config.getConfig(path))
+  implicit val ConfigListAtPath:  Configz[String => List[Config]]  = atPath(config => path => config.getConfigList(path).toList)
+  implicit val DoubleAtPath:      Configz[String => Double]        = atPath(config => path => config.getDouble(path))
+  implicit val DoubleListAtPath:  Configz[String => List[Double]]  = atPath(config => path => config.getDoubleList(path).toList.map(Double.unbox))
+  implicit val IntAtPath:         Configz[String => Int]           = atPath(config => path => config.getInt(path))
+  implicit val IntListAtPath:     Configz[String => List[Int]]     = atPath(config => path => config.getIntList(path).toList.map(Int.unbox))
+  implicit val LongAtPath:        Configz[String => Long]          = atPath(config => path => config.getLong(path))
+  implicit val LongListAtPath:    Configz[String => List[Long]]    = atPath(config => path => config.getLongList(path).toList.map(Long.unbox))
+  implicit val NumberAtPath:      Configz[String => Number]        = atPath(config => path => config.getNumber(path))
+  implicit val NumberListAtPath:  Configz[String => List[Number]]  = atPath(config => path => config.getNumberList(path).toList)
+  implicit val StringAtPath:      Configz[String => String]        = atPath(config => path => config.getString(path))
+  implicit val StringListAtPath:  Configz[String => List[String]]  = atPath(config => path => config.getStringList(path).toList)
 }
