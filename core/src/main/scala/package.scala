@@ -30,11 +30,15 @@ package object configz {
   import Scalaz._
   import Configz._
 
-  type Settings[A] = ValidationNEL[ConfigException, A]
+  implicit val BooleanAtPath: Configz[String => Boolean] = atPath(config => path => config.getBoolean(path))
+  implicit val IntAtPath:     Configz[String => Int]     = atPath(config => path => config.getInt(path))
+  implicit val StringAtPath:  Configz[String => String]  = atPath(config => path => config.getString(path))
+  implicit val ConfigAtPath:  Configz[String => Config]  = atPath(config => path => config.getConfig(path))
+  // TODO: more AtPath instances
 
   /** Additional methods on [[com.typesafe.config.Config]]. */
   class ConfigOps(config: Config) {
-    def get[A](configz: Configz[A]): Settings[A] = configz.settings(config)
+    def get[A](configz: Configz[A]): ValidationNEL[ConfigException, A] = configz.settings(config)
   }
 
   implicit def configToConfigOps(config: Config): ConfigOps = new ConfigOps(config)

@@ -7,7 +7,7 @@ import Scalaz._
 /** Reads settings from a [[com.typesafe.config.Config]]. */
 sealed trait Configz[A] {
   /** Read the settings from a config. */
-  def settings(config: Config): Settings[A]
+  def settings(config: Config): ValidationNEL[ConfigException, A]
 }
 
 object Configz {
@@ -58,7 +58,7 @@ object Configz {
 
   /** Get a value at a path from a [[com.typesafe.config.Config]]. */
   def atPath[A](f: Config => String => A): Configz[String => A] = new Configz[String => A] {
-    def settings(config: Config): Settings[String => A] = f(config).pure[Configz].settings(config)
+    def settings(config: Config): ValidationNEL[ConfigException, String => A] = f(config).pure[Configz].settings(config)
 
     override def toString = "Configz(atPath)[%s]".format(f)
   }

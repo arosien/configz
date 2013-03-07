@@ -15,10 +15,10 @@ val boolPath: Configz[Boolean] = "some.path.to.a.bool".path[Boolean]
 val intPath:  Configz[Int]     = "some.path.to.an.int".path[Int]
 
 // Get the values at the path, which may fail with a com.typesafe.config.ConfigException.
-val boolProp: Settings[Boolean] = config.get(boolPath)
-val intProp:  Settings[Int]     = config.get(intPath)
+val boolProp: ValidationNEL[ConfigException, Boolean] = config.get(boolPath)
+val intProp:  ValidationNEL[ConfigException, Int]     = config.get(intPath)
 
-// Configz is an applicative functor, so you can combine them:
-val boolIntConfig: Configz[(Boolean, Int)]  = (boolPath |@| intPath)(_ -> _)
-val boolIntProp:   Settings[(Boolean, Int)] = config.get(boolIntProp)
+// Configz is an applicative functor, so you can combine them (using scalaz operators):
+val boolIntConfig: Configz[(Boolean, Int)] = (boolPath |@| intPath)(_ -> _)
+val boolIntProp:   ValidationNEL[ConfigException, (Boolean, Int)] = config.get(boolIntConfig)
 ```
