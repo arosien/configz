@@ -15,10 +15,15 @@ val boolPath: Configz[Boolean] = "some.path.to.a.bool".path[Boolean]
 val intPath:  Configz[Int]     = "some.path.to.an.int".path[Int]
 
 // Get the values at the path, which may fail with a com.typesafe.config.ConfigException.
-val boolProp: ValidationNEL[ConfigException, Boolean] = config.get(boolPath)
-val intProp:  ValidationNEL[ConfigException, Int]     = config.get(intPath)
+val boolProp: Settings[Boolean]      = config.get(boolPath)
+val intProp:  Settings[Boolean, Int] = config.get(intPath)
 
-// Configz is an applicative functor, so you can combine them (using scalaz operators):
-val boolIntConfig: Configz[(Boolean, Int)] = (boolPath |@| intPath)(_ -> _)
-val boolIntProp:   ValidationNEL[ConfigException, (Boolean, Int)] = config.get(boolIntConfig)
+// Note that Settings[A] is an alias for ValidationNEL[ConfigException, A].
+
+// Configz is an applicative functor, so you can combine them (using scalaz operators like <*> or |@|):
+val boolIntConfig: Configz[(Boolean, Int)]  = (boolPath |@| intPath)(_ -> _)
+val boolIntProp:   Settings[(Boolean, Int)] = config.get(boolIntConfig)
+
+// Configz paths can have custom validation using the >=> (Kleisli) operator:
+val validatedIntPath = intPath >=> validate((_: Int) > 1000, "some.path.to.an.int must be > 1000")
 ```

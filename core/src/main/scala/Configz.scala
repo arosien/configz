@@ -7,10 +7,12 @@ import Scalaz._
 /** Reads settings from a [[com.typesafe.config.Config]]. */
 sealed trait Configz[A] {
   /** Read the settings from a config. */
-  def settings(config: Config): ValidationNEL[ConfigException, A]
+  def settings(config: Config): Settings[A]
 }
 
 object Configz {
+  implicit def configzToKleisli[A](configz: Configz[A]): Kleisli[Settings, Config, A] = kleisli(configz.settings)
+
   implicit val ConfigzPure: Pure[Configz] = new Pure[Configz] {
     def pure[A](a: => A): Configz[A] = new Configz[A] {
       def settings(config: Config) =

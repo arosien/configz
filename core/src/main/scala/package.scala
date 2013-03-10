@@ -19,21 +19,36 @@ package net.rosien
  * val boolProp: Settings[Boolean] = config.get(boolPath)
  * val intProp:  Settings[Int]     = config.get(intPath)
  *
- * // Configz is an applicative functor, so you can combine them:
+ * // Configz is an applicative functor, so you can combine them (using scalaz operators like <*> or |@|):
  * val boolIntConfig: Configz[(Boolean, Int)]  = (boolPath |@| intPath)(_ -> _)
- * val boolIntProp:   Settings[(Boolean, Int)] = config.get(boolIntProp)
+ * val boolIntProp:   Settings[(Boolean, Int)] = config.get(boolIntConfig)
+ *
+ * // Configz paths can have custom validation using the >=> (Kleisli) operator:
+ * val validatedIntPath = intPath >=> validate((_: Int) > 1000, "some.path.to.an.int must be > 1000")
  * }}}
  */
 package object configz {
   import com.typesafe.config._
   import scalaz._
   import Scalaz._
+  import Validation.Monad._
   import Configz._
 
+  type Settings[A] = ValidationNEL[ConfigException, A]
+
+  implicit val SettingsBind = implicitly[Bind[Settings]]
+
+  /** Validate a Configz path.
+   * @param f predicate function
+   * @param message failure message if f returns false
+   * @return validation function to be composed with Configz via >=> operator
+   */
+  def validate[A](f: A => Boolean, message: String): A => Settings[A] = prop =>
+    if (f(prop)) prop.successNel else new ConfigException.Generic(message).failNel[A]
 
   /** Additional methods on [[com.typesafe.config.Config]]. */
   class ConfigOps(config: Config) {
-    def get[A](configz: Configz[A]): ValidationNEL[ConfigException, A] = configz.settings(config)
+    def get[A](configz: Kleisli[Settings, Config, A]): ValidationNEL[ConfigException, A] = configz(config)
   }
 
   implicit def configToConfigOps(config: Config): ConfigOps = new ConfigOps(config)
