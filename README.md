@@ -10,6 +10,9 @@ import Scalaz._
 
 val config = ConfigFactory.load // or some other constructor from com.typesafe.config
 
+// Config instances may be appended using Config.withFallback() semantics. (Config has a Monoid[Config])
+val combinedConfig = config |+| ConfigFactory.parseFile(...)
+
 // Define some paths to values of a certain type.
 val boolPath: Configz[Boolean] = "some.path.to.a.bool".path[Boolean]
 val intPath:  Configz[Int]     = "some.path.to.an.int".path[Int]
