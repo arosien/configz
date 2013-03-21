@@ -9,7 +9,10 @@ package net.rosien
  * import scalaz._
  * import Scalaz._
  *
- * val config = ConfigFactory.load // or some other constructor from com.typesafe.config
+ * val config = ConfigFactory.load // or some other constructor from com.typesafe.config.ConfigFactory
+ *
+ * // Config instances may be appended using Config.withFallback() semantics. (Config has a Monoid[Config])
+ * val combinedConfig = config |+| ConfigFactory.parseFile(...)
  *
  * // Define some paths to values of a certain type.
  * val boolPath: Configz[Boolean] = "some.path.to.a.bool".path[Boolean]
@@ -52,6 +55,14 @@ package object configz {
   }
 
   implicit def configToConfigOps(config: Config): ConfigOps = new ConfigOps(config)
+
+  /** The zero of a Config is the empty config. */
+  implicit val ConfigZero = zero(ConfigFactory.empty)
+
+  /** Two Config instances are appended into a Config containing the first Config, then "falling back" 
+   * on the second according to the withFallback() method.
+   */
+  implicit val ConfigSemigroup: Semigroup[Config] = semigroup((a, b) => a.withFallback(b))
 
   /** Lift a String to a (typed) path into a config. */
   case class StringOps(value: String) {

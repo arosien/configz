@@ -1,14 +1,29 @@
 package net.rosien.configz
 
 import org.specs2.Specification
+import org.specs2.scalaz.ScalazMatchers
 import org.specs2.scalaz.ValidationMatchers
 
-class ConfigzSpec extends Specification with ValidationMatchers {
+class ConfigzSpec extends Specification with ValidationMatchers with ScalazMatchers {
+  import collection.JavaConversions._
+  import com.typesafe.config._
+  import org.scalacheck._
+  import scalaz._
+  import Scalaz._
+
   def is = "Configz should" ^
-    "accumulate errors"    ! configz().errors ^
-    "read settings"        ! configz().settings ^
-    "validate via kleisli" ! configz().validateKleisli ^
+    "accumulate errors"      ! configz().errors ^
+    "read settings"          ! configz().settings ^
+    "validate via kleisli"   ! configz().validateKleisli ^
+    "provide Monoid[Config]" ! configz().configMonoid ^
     end
+
+  implicit val ArbConfig: Arbitrary[Config] = Arbitrary {
+    Gen.oneOf(
+      ConfigFactory.empty,
+      ConfigFactory.load,
+      ConfigFactory.parseMap(Map("foo" -> 12, "bar" -> "baz")))
+  }
 
   case class configz()  {
     import com.typesafe.config._
@@ -38,5 +53,7 @@ class ConfigzSpec extends Specification with ValidationMatchers {
 
       (config.get(intProp >=> validIntProp) must beFailing)
     }
+
+    def configMonoid = implicitly[Monoid[Config]].isMonoid
   }
 }

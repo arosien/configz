@@ -38,7 +38,13 @@ object Builds extends sbt.Build {
           <name>Adam Rosien</name>
           <url>http://rosien.net</url>
         </developer>
-      </developers>)
+      </developers>),
+    initialCommands in console := """
+      |import com.typesafe.config._
+      |import net.rosien.configz._
+      |import scalaz._
+      |import Scalaz._
+      |""".stripMargin
   )
 
   // Depends on 'core' so that one can depend on 'configz' or 'configz-core'.
