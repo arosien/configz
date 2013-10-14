@@ -26,48 +26,33 @@ package net.rosien
  * val boolIntConfig: Configz[(Boolean, Int)]  = (boolPath |@| intPath)(_ -> _)
  * val boolIntProp:   Settings[(Boolean, Int)] = config.get(boolIntConfig)
  *
- * // Configz paths can have custom validation using the >=> (Kleisli) operator:
- * val validatedIntPath = intPath >=> validate((_: Int) > 1000, "some.path.to.an.int must be > 1000")
+ * // Configz paths can have custom validation:
+ * val validatedIntPath = intPath.validate((_: Int) > 1000, "some.path.to.an.int must be > 1000")
  * }}}
  */
 package object configz {
   import com.typesafe.config._
   import scalaz._
   import Scalaz._
-  import Validation.Monad._
   import Configz._
 
-  type Settings[A] = ValidationNEL[ConfigException, A]
-
-  implicit val SettingsBind = implicitly[Bind[Settings]]
-
-  /** Validate a Configz path.
-   * @param f predicate function
-   * @param message failure message if f returns false
-   * @return validation function to be composed with Configz via >=> operator
-   */
-  def validate[A](f: A => Boolean, message: String): A => Settings[A] = prop =>
-    if (f(prop)) prop.successNel else new ConfigException.Generic(message).failNel[A]
+  type Settings[+A] = ValidationNel[ConfigException, A]
 
   /** Additional methods on [[com.typesafe.config.Config]]. */
-  class ConfigOps(config: Config) {
-    def get[A](configz: Kleisli[Settings, Config, A]): ValidationNEL[ConfigException, A] = configz(config)
+  implicit class ConfigOps(config: Config) {
+    def get[A](configz: Configz[A]): Settings[A] = configz.settings(config)
   }
 
-  implicit def configToConfigOps(config: Config): ConfigOps = new ConfigOps(config)
+  implicit val ConfigEqual: Equal[Config] = Equal.equalA
 
-  /** The zero of a Config is the empty config. */
-  implicit val ConfigZero = zero(ConfigFactory.empty)
-
-  /** Two Config instances are appended into a Config containing the first Config, then "falling back" 
+  /** The zero of a Config is the empty config, and two Config instances
+   * are appended into a Config containing the first Config, then "falling back"
    * on the second according to the withFallback() method.
    */
-  implicit val ConfigSemigroup: Semigroup[Config] = semigroup((a, b) => a.withFallback(b))
+  implicit val ConfigMonoid: Monoid[Config] = Monoid.instance[Config](_.withFallback(_), ConfigFactory.empty)
 
   /** Lift a String to a (typed) path into a config. */
-  case class StringOps(value: String) {
+  implicit class StringOps(value: String) {
     def path[A](implicit atPath: Configz[String => A]): Configz[A] = value.pure[Configz] <*> atPath
   }
-
-  implicit def stringToOps(value: String): StringOps = StringOps(value)
 }

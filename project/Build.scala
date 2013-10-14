@@ -7,9 +7,8 @@ object Builds extends sbt.Build {
 
   lazy val buildSettings = Defaults.defaultSettings ++ releaseSettings ++ Seq(
     organization := "net.rosien",
-    scalaVersion := "2.9.2",
-    crossScalaVersions := Seq("2.9.2", "2.10.0"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked"),
+    scalaVersion := "2.10.2",
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
     publishArtifact in Test := false,
     publishMavenStyle := true,
     publishTo <<= version { v: String =>
@@ -60,10 +59,11 @@ object Builds extends sbt.Build {
       sourceGenerators in Compile <+= buildInfo,
       buildInfoPackage := "net.rosien.configz",
       libraryDependencies ++= Seq(
-        "com.typesafe"   % "config"         % "1.0.0",
-        "org.scalaz"    %% "scalaz-core"    % "6.0.4",
-        "org.specs2"    %% "specs2"         % "1.12.3" % "test",
-        "org.typelevel" %% "scalaz6-specs2" % "0.1"    % "test"
+        "com.typesafe"   % "config"                    % "1.0.0",
+        "org.scalaz"    %% "scalaz-core"               % "7.0.4",
+        "org.scalaz"    %% "scalaz-scalacheck-binding" % "7.0.4",
+        "org.specs2"    %% "specs2"                    % "1.12.3" % "test",
+        "org.typelevel" %% "scalaz-specs2"             % "0.1.3"  % "test"
       )
     ))
 }
