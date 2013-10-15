@@ -51,7 +51,7 @@ object Configz {
   /** Get a value at a path from a [[com.typesafe.config.Config]]. */
   def atPath[A](f: Config => String => A): Configz[String => A] =
     new Configz[String => A] {
-      def settings(config: Config): Settings[String => A] = f(config).pure[Configz].settings(config)
+      def settings(config: Config): Settings[String => A] = f(config).point[Configz].settings(config)
 
       override def toString = "Configz(atPath)[%s]".format(f)
     }

@@ -53,6 +53,6 @@ package object configz {
 
   /** Lift a String to a (typed) path into a config. */
   implicit class StringOps(value: String) {
-    def path[A](implicit atPath: Configz[String => A]): Configz[A] = value.pure[Configz] <*> atPath
+    def path[A](implicit atPath: Configz[String => A]): Configz[A] = value.point[Configz] <*> atPath
   }
 }
